@@ -1,5 +1,6 @@
 package com.example.myapitest.service
 
+import com.example.myapitest.model.Car
 import com.example.myapitest.model.CarValue
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -13,7 +14,7 @@ interface CarApiService {
     suspend fun getCars(): List<CarValue>
 
     @GET("car/{id}")
-    suspend fun getCar(@Path("id") id: String): CarValue
+    suspend fun getCar(@Path("id") id: String): Car
 
     @DELETE("car/{id}")
     suspend fun deleteCar(@Path("id") id: String)

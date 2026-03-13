@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             fetchItems()
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.addCta.setOnClickListener {
+        binding.addCar.setOnClickListener {
             val intent = CarDetailActivity.newIntent(this, "0")
             startActivity(intent)
         }
