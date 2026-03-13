@@ -112,8 +112,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleOnSuccess(items: List<CarValue>) {
         binding.recyclerView.adapter = CarAdapter(items) { item ->
-            //val intent = ItemDetailActivity.newIntent(this, item.id)
-            //startActivity(intent)
+            val intent = CarDetailActivity.newIntent(this, item.id)
+            startActivity(intent)
         }
     }
 }
