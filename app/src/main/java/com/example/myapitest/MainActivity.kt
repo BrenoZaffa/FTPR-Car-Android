@@ -1,12 +1,33 @@
 package com.example.myapitest
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myapitest.adapter.CarAdapter
 import com.example.myapitest.databinding.ActivityMainBinding
+import com.example.myapitest.model.CarValue
+import com.example.myapitest.service.RetrofitClient
+import com.example.myapitest.service.safeApiCall
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.example.myapitest.service.Result
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,14 +57,63 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
-        // TODO
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            fetchItems()
+        }
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.addCta.setOnClickListener { }
     }
 
     private fun requestLocationPermission() {
-        // TODO
+        // Inicializa o FusedLocationPermission
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // Configura o ActivityResultLauncher para solicitar a permissão de localização
+        locationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                Toast.makeText(this, "Permissão de localização concedida", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permissão de localização negada", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        checkLocationPermissionAndRequest()
+    }
+
+    private fun checkLocationPermissionAndRequest() {
+        when {
+            shouldShowRequestPermissionRationale(ACCESS_FINE_LOCATION) -> {
+                locationPermissionLauncher.launch(ACCESS_FINE_LOCATION)
+            }
+            shouldShowRequestPermissionRationale(ACCESS_COARSE_LOCATION) -> {
+                locationPermissionLauncher.launch(ACCESS_COARSE_LOCATION)
+            }
+            else -> {
+                locationPermissionLauncher.launch(ACCESS_FINE_LOCATION)
+            }
+        }
     }
 
     private fun fetchItems() {
-        // TODO
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = safeApiCall { RetrofitClient.carApiService.getCars() }
+
+            withContext(Dispatchers.Main) {
+                binding.swipeRefreshLayout.isRefreshing = false
+                when (result) {
+                    is Result.Success -> handleOnSuccess(result.data)
+                    is Result.Error -> {
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleOnSuccess(items: List<CarValue>) {
+        binding.recyclerView.adapter = CarAdapter(items) { item ->
+            //val intent = ItemDetailActivity.newIntent(this, item.id)
+            //startActivity(intent)
+        }
     }
 }
