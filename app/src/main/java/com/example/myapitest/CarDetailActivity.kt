@@ -163,6 +163,7 @@ class CarDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (itemId == "0" || itemId.isEmpty()) {
             binding.deleteCar.visibility = View.GONE
+            binding.imageUrl.isEnabled = false
             item = CarValue(
                 id = "",
                 name = "",
